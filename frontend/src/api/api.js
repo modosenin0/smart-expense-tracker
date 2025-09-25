@@ -1,7 +1,10 @@
 import axios from "axios";
 
+// Use environment variable for API URL, fallback to production
+const API_BASE_URL = process.env.REACT_APP_API_URL || "https://smart-expense-tracker-app.azurewebsites.net/api";
+
 const API = axios.create({ 
-  baseURL: "http://localhost:5000/api",
+  baseURL: API_BASE_URL,
   timeout: 10000 // 10 second timeout
 });
 
