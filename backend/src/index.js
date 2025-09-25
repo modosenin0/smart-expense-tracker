@@ -6,13 +6,39 @@ import authRoutes from "./routes/authRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js"
-import initializeAppInsights from "./config/appInsights.js";
+import configManager from "./config/configManager.js";
 
 // Load environment variables first
 dotenv.config();
 
-// Initialize Application Insights
-const insights = initializeAppInsights();
+// Initialize configuration and Application Insights
+async function initializeApp() {
+  try {
+    console.log('🚀 Starting Smart Expense Tracker API...');
+    
+    // Initialize configuration manager (loads secrets from Key Vault)
+    await configManager.initialize();
+    const config = configManager.getConfig();
+    
+    // Initialize Application Insights with Key Vault connection string
+    const appInsights = require('applicationinsights');
+    appInsights.setup(config.appInsightsConnectionString)
+      .setAutoDependencyCorrelation(true)
+      .setAutoCollectRequests(true)
+      .setAutoCollectPerformance(true, true)
+      .setAutoCollectExceptions(true)
+      .setAutoCollectDependencies(true)
+      .setAutoCollectConsole(true)
+      .setUseDiskRetryCaching(true)
+      .setSendLiveMetrics(true)
+      .start();
+    
+    return { config, insights: appInsights };
+  } catch (error) {
+    console.error('❌ Failed to initialize application:', error.message);
+    process.exit(1);
+  }
+}
 const app = express();
 
 // Configure CORS for both development and production
