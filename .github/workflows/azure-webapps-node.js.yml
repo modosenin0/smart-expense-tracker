@@ -1,4 +1,4 @@
-name: Deploy Smart Expense Tracker Backend to Azure
+name: Build and Deploy Node.js app to Azure Web App - smart-expense-tracker-app
 
 on:
   push:
