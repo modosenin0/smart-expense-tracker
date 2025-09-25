@@ -24,9 +24,14 @@ jobs:
         npm install
         npm run build --if-present
 
+    - name: Zip deployment package
+      run: |
+        cd backend
+        zip -r ../deploy.zip .
+
     - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@v3
       with:
         app-name: 'smart-expense-tracker-app'
         publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_SMART_EXPENSE_TRACKER }}
-        package: './backend'
+        package: 'deploy.zip'
