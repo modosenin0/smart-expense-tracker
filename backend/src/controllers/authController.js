@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
+import appInsights from "applicationinsights";
 
 export const register = async (req, res) => {
   try {
@@ -18,8 +19,26 @@ export const register = async (req, res) => {
     // Create user
     const newUser = await createUser(name, email, passwordHash);
 
-    res.status(201).json(newUser);
+    // Generate JWT token for automatic login
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.status(201).json({ token, user: { id: newUser.id, name: newUser.name, email: newUser.email } });
   } catch (err) {
+    // Track registration errors
+    if (appInsights.defaultClient) {
+      appInsights.defaultClient.trackException({ 
+        exception: err,
+        properties: { 
+          controller: 'authController',
+          action: 'register',
+          email: req.body.email 
+        }
+      });
+    }
     res.status(500).json({ error: err.message });
   }
 };
@@ -44,6 +63,17 @@ export const login = async (req, res) => {
 
     res.json({ token });
   } catch (err) {
+    // Track login errors
+    if (appInsights.defaultClient) {
+      appInsights.defaultClient.trackException({ 
+        exception: err,
+        properties: { 
+          controller: 'authController',
+          action: 'login',
+          email: req.body.email 
+        }
+      });
+    }
     res.status(500).json({ error: err.message });
   }
 };

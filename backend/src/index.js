@@ -6,9 +6,13 @@ import authRoutes from "./routes/authRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js"
+import initializeAppInsights from "./config/appInsights.js";
 
-
+// Load environment variables first
 dotenv.config();
+
+// Initialize Application Insights
+const insights = initializeAppInsights();
 const app = express();
 
 // Configure CORS for both development and production
@@ -24,6 +28,41 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Application Insights middleware for custom tracking
+if (insights) {
+  app.use((req, res, next) => {
+    const startTime = Date.now();
+    
+    // Log request
+    insights.telemetry.trackTrace(`${req.method} ${req.url}`, 1, {
+      method: req.method,
+      url: req.url,
+      userAgent: req.get('User-Agent') || 'Unknown'
+    });
+
+    // Track response time
+    res.on('finish', () => {
+      const duration = Date.now() - startTime;
+      insights.telemetry.trackMetric('request_duration_ms', duration, {
+        method: req.method,
+        url: req.url,
+        statusCode: res.statusCode.toString()
+      });
+
+      // Track custom events for important endpoints
+      if (req.url.includes('/auth/login') && res.statusCode === 200) {
+        insights.telemetry.trackEvent('user_login_success');
+      } else if (req.url.includes('/auth/register') && res.statusCode === 201) {
+        insights.telemetry.trackEvent('user_registration_success');
+      } else if (req.url.includes('/expenses') && req.method === 'POST' && res.statusCode === 201) {
+        insights.telemetry.trackEvent('expense_created');
+      }
+    });
+
+    next();
+  });
+}
 
 app.use("/api/auth", authRoutes);
 app.use("/api/expenses", expenseRoutes);

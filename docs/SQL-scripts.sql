@@ -19,6 +19,7 @@ CREATE TABLE expenses (
     category_id INT REFERENCES categories(id) ON DELETE SET NULL,
     amount NUMERIC(12,2) NOT NULL,
     currency VARCHAR(10) NOT NULL,
+    converted_amount NUMERIC(12,2),
     description TEXT,
     expense_date DATE NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

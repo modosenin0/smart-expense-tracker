@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Navbar from "./components/Navbar";
+import { telemetry } from "./services/appInsights";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -14,6 +15,16 @@ function App() {
     const storedToken = localStorage.getItem("token");
     if (storedToken) {
       setToken(storedToken);
+      // Track user session start
+      telemetry.trackEvent('app_session_start', { 
+        hasToken: true,
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      telemetry.trackEvent('app_session_start', { 
+        hasToken: false,
+        timestamp: new Date().toISOString()
+      });
     }
     setLoading(false);
   }, []);
@@ -21,6 +32,9 @@ function App() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setToken(null);
+    // Track logout event
+    telemetry.trackEvent('user_logout');
+    telemetry.clearUser();
   };
 
   const handleTokenSet = (newToken) => {

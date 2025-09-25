@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import API from "../api/api";
+import { telemetry } from "../services/appInsights";
 
 export default function Register({ setToken }) {
   const [name, setName] = useState("");
@@ -30,8 +31,25 @@ export default function Register({ setToken }) {
       const res = await API.post("/auth/register", { name, email, password });
       const token = res.data.token;
       localStorage.setItem("token", token);
+      
+      // Track successful registration
+      telemetry.trackEvent('user_registered', { 
+        email: email,
+        hasName: !!name 
+      });
+      
+      // Set user context for Application Insights
+      if (res.data.user) {
+        telemetry.setUser(res.data.user.id, res.data.user.email);
+      }
+      
       setToken(token); // This will trigger the App component to re-render
     } catch (err) {
+      // Track registration errors
+      telemetry.trackException(new Error('Registration failed'), {
+        email: email,
+        errorMessage: err.response?.data?.message || err.message
+      });
       setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
