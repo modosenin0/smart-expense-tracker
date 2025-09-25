@@ -7,53 +7,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
-
+    
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
+    - name: Set up Node.js version
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
 
-      - name: npm install and build
-        run: |
-          cd backend
-          npm install
-          npm run build --if-present
-        
-      - name: Zip artifact for deployment
-        run: |
-          # Create deployment package with backend files and root package.json
-          zip -r release.zip backend/ package.json Procfile
-          
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: node-app
-          path: release.zip
+    - name: npm install and build
+      run: |
+        cd backend
+        npm install
+        npm run build --if-present
 
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: node-app
-
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'smart-expense-tracker-app'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_SMART_EXPENSE_TRACKER }}
-          package: release.zip
+    - name: 'Deploy to Azure Web App'
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: 'smart-expense-tracker-app'
+        publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_SMART_EXPENSE_TRACKER }}
+        package: './backend'
