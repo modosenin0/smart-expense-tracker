@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import API from "../api/api";
 
 export default function Register({ setToken }) {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +27,7 @@ export default function Register({ setToken }) {
     setLoading(true);
 
     try {
-      const res = await API.post("/auth/register", { email, password });
+      const res = await API.post("/auth/register", { name, email, password });
       const token = res.data.token;
       localStorage.setItem("token", token);
       setToken(token); // This will trigger the App component to re-render
@@ -54,6 +55,23 @@ export default function Register({ setToken }) {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Full Name
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                className="mt-1 appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
+
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
