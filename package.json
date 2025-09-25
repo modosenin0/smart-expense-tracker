@@ -1,0 +1,12 @@
+{
+  "name": "smart-expense-tracker-root",
+  "version": "1.0.0",
+  "description": "Smart Expense Tracker - Root deployment configuration",
+  "scripts": {
+    "build": "cd backend && npm install",
+    "start": "cd backend && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
