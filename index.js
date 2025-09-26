@@ -22,8 +22,8 @@ async function initializeApp() {
     const config = configManager.getConfig();
     
     // Initialize Application Insights with Key Vault connection string
-    const appInsights = require('applicationinsights');
-    appInsights.setup(config.appInsightsConnectionString)
+    const appInsights = await import('applicationinsights');
+    appInsights.default.setup(config.appInsightsConnectionString)
       .setAutoDependencyCorrelation(true)
       .setAutoCollectRequests(true)
       .setAutoCollectPerformance(true, true)
