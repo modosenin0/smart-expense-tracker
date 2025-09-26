@@ -17,21 +17,47 @@ async function initializeApp() {
     console.log('🚀 Starting Smart Expense Tracker API...');
     
     // Initialize configuration manager (loads secrets from Key Vault)
-    await configManager.initialize();
-    const config = configManager.getConfig();
+    let config;
+    try {
+      await configManager.initialize();
+      config = configManager.getConfig();
+      console.log('✅ Key Vault configuration loaded successfully');
+    } catch (keyVaultError) {
+      console.warn('⚠️ Key Vault initialization failed, using fallback configuration:', keyVaultError.message);
+      config = {
+        appInsightsConnectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING || '',
+        port: process.env.PORT || 3000,
+        dbHost: process.env.DB_HOST || 'localhost',
+        dbPort: process.env.DB_PORT || 5432,
+        dbName: process.env.DB_NAME || 'expense_tracker',
+        dbUser: process.env.DB_USER || 'postgres',
+        dbPassword: process.env.DB_PASSWORD || '',
+        jwtSecret: process.env.JWT_SECRET || 'fallback-secret-key'
+      };
+    }
     
     // Initialize Application Insights with Key Vault connection string
-    const appInsights = require('applicationinsights');
-    appInsights.setup(config.appInsightsConnectionString)
-      .setAutoDependencyCorrelation(true)
-      .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(true, true)
-      .setAutoCollectExceptions(true)
-      .setAutoCollectDependencies(true)
-      .setAutoCollectConsole(true)
-      .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(true)
-      .start();
+    if (config.appInsightsConnectionString) {
+      try {
+        const appInsights = await import('applicationinsights');
+        appInsights.default.setup(config.appInsightsConnectionString)
+          .setAutoDependencyCorrelation(true)
+          .setAutoCollectRequests(true)
+          .setAutoCollectPerformance(true, true)
+          .setAutoCollectExceptions(true)
+          .setAutoCollectDependencies(true)
+          .setAutoCollectConsole(true)
+          .setUseDiskRetryCaching(true)
+          .setSendLiveMetrics(false)
+          .start();
+        
+        console.log('✅ Application Insights initialized successfully');
+      } catch (appInsightsError) {
+        console.warn('⚠️ Application Insights initialization failed:', appInsightsError.message);
+      }
+    } else {
+      console.log('ℹ️ No Application Insights connection string provided, skipping telemetry');
+    }
     
     return { config, insights: appInsights };
   } catch (error) {
@@ -97,6 +123,18 @@ app.use("/api/analytics", analyticsRoutes);
 
 app.get("/", (req, res) => {
   res.send("Smart Expense Tracker API is running 🚀");
+});
+
+app.get("/api/health", (req, res) => {
+  const healthCheck = {
+    status: "OK",
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    environment: process.env.NODE_ENV || 'development',
+    keyVaultEnabled: process.env.USE_AZURE_KEY_VAULT === 'true',
+    keyVaultUrl: process.env.AZURE_KEY_VAULT_URL ? 'configured' : 'not configured'
+  };
+  res.json(healthCheck);
 });
 
 app.get("/test-db", async (req, res) => {
