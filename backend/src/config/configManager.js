@@ -1,4 +1,4 @@
-const AzureKeyVaultManager = require('./keyVault');
+import AzureKeyVaultManager from './keyVault.js';
 
 class ConfigManager {
     constructor() {
@@ -86,4 +86,4 @@ class ConfigManager {
 // Create singleton instance
 const configManager = new ConfigManager();
 
-module.exports = configManager;
+export default configManager;

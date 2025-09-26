@@ -1,5 +1,5 @@
-const { DefaultAzureCredential } = require('@azure/identity');
-const { SecretClient } = require('@azure/keyvault-secrets');
+import { DefaultAzureCredential } from '@azure/identity';
+import { SecretClient } from '@azure/keyvault-secrets';
 
 class AzureKeyVaultManager {
     constructor() {
@@ -99,4 +99,4 @@ class AzureKeyVaultManager {
     }
 }
 
-module.exports = AzureKeyVaultManager;
+export default AzureKeyVaultManager;
