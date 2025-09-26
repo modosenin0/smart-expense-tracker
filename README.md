@@ -66,7 +66,7 @@ cd smart-expense-tracker
 ```bash
 cd backend
 npm install
-cp .env.example .env   # configure DATABASE_URL + JWT_SECRET
+cp .env.example .env   
 npm run dev
 ```
 
