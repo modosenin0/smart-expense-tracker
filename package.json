@@ -1,0 +1,32 @@
+{
+  "name": "smart-expense-tracker",
+  "version": "1.0.0",
+  "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration",
+  "main": "backend/src/index.js",
+  "scripts": {
+    "start": "cd backend && npm install --production && npm start",
+    "dev": "cd backend && npm run dev",
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "build": "cd frontend && npm install && npm run build",
+    "test": "cd backend && npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/modosenin0/smart-expense-tracker.git"
+  },
+  "keywords": [
+    "expense-tracker",
+    "azure",
+    "nodejs",
+    "react",
+    "postgresql",
+    "keyvault"
+  ],
+  "author": "Smart Expense Tracker Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}
