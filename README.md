@@ -1,23 +1,34 @@
 # 💰 Smart Expense Tracker
 
-A full-stack expense tracking web application with **React, Node.js, Express, and PostgreSQL**.  
-Deployed on **Azure App Service** (backend), **Azure PostgreSQL Flexible Server** (database), and **Azure Static Web Apps** (frontend).  
-Includes **multi-currency support**, **analytics dashboards**, and **Application Insights monitoring**.
+🚀 **A secure, full-stack expense tracking web application** with **React, Node.js, Express, and PostgreSQL**.  
+Deployed on **Azure** with **complete security automation** using **Azure Key Vault, Managed Identity, and Application Insights**.  
+✨ **Zero manual secret management** - all credentials are automatically generated and securely stored in the cloud!
 
 ---
 
 ## 🚀 Features
 
-- 🔐 User authentication with JWT
-- 📂 Categories for organizing expenses
-- 💱 Multi-currency support (auto-conversion to GBP via ExchangeRate API)
-- 📊 Analytics dashboard:
+### 💰 Core Features
+- 🔐 **Secure user authentication** with JWT
+- 📂 **Smart categories** for organizing expenses
+- 💱 **Multi-currency support** (auto-conversion to GBP)
+- 📊 **Advanced analytics dashboard**:
   - Spending by category
   - Monthly spending trends
-  - Top categories
-- ☁️ Fully deployed on **Azure**
-- 📈 Observability with **Application Insights**
-- ✅ Tested with Jest + Supertest
+  - Top spending categories
+
+### 🔒 Enterprise Security (100% Automated!)
+- 🔐 **Azure Key Vault integration** - All secrets stored securely
+- 🎯 **Managed Identity authentication** - No credentials in code
+- 🔄 **Automatic secret rotation** - Database passwords auto-generated
+- � **Application Insights monitoring** - Full observability
+- ✅ **Zero manual configuration** - Everything automated!
+
+### ☁️ Azure Cloud Infrastructure
+- 🌍 **Azure App Service** - Scalable backend hosting
+- 🗄️ **Azure PostgreSQL Flexible Server** - Managed database
+- 🎯 **Azure Static Web Apps** - Frontend hosting
+- 📈 **Application Insights** - Real-time monitoring
 
 ---
 

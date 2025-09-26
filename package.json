@@ -1,13 +1,15 @@
 {
   "name": "smart-expense-tracker",
   "version": "1.0.0",
-  "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration and automated deployment",
-  "main": "backend/src/index.js",
+  "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration",
+  "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "cd backend && node src/index.js",
-    "dev": "cd backend && node src/index.js",
-    "build": "cd backend && npm install",
-    "test": "cd backend && npm test"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --detectOpenHandles --forceExit",
+    "install-frontend": "cd frontend && npm install",
+    "build-frontend": "cd frontend && npm install && npm run build"
   },
   "repository": {
     "type": "git",
@@ -40,9 +42,13 @@
     "pg": "^8.16.3"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "jest": "^30.1.3",
     "nodemon": "^3.1.10",
-    "supertest": "^7.1.4",
-    "cross-env": "^7.0.3"
+    "supertest": "^7.1.4"
+  },
+  "jest": {
+    "transform": {},
+    "testEnvironment": "node"
   }
 }
