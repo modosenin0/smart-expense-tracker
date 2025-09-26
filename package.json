@@ -1,7 +1,7 @@
 {
   "name": "smart-expense-tracker",
   "version": "1.0.0",
-  "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration",
+  "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration and automated deployment",
   "main": "backend/src/index.js",
   "scripts": {
     "start": "cd backend && node src/index.js",
