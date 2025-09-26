@@ -3,12 +3,13 @@ import { SecretClient } from '@azure/keyvault-secrets';
 
 class AzureKeyVaultManager {
     constructor() {
-        this.keyVaultName = process.env.KEY_VAULT_NAME;
-        if (!this.keyVaultName) {
-            throw new Error('KEY_VAULT_NAME environment variable is required');
+        this.keyVaultUrl = process.env.AZURE_KEY_VAULT_URL;
+        if (!this.keyVaultUrl) {
+            throw new Error('AZURE_KEY_VAULT_URL environment variable is required');
         }
         
-        this.keyVaultUrl = `https://${this.keyVaultName}.vault.azure.net`;
+        // Extract Key Vault name from URL for logging purposes
+        this.keyVaultName = this.keyVaultUrl.replace('https://', '').replace('.vault.azure.net/', '');
         this.credential = new DefaultAzureCredential();
         this.client = new SecretClient(this.keyVaultUrl, this.credential);
         

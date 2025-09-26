@@ -10,18 +10,23 @@ class ConfigManager {
     async initialize() {
         console.log('🚀 Initializing configuration...');
         
-        try {
-            // Initialize Key Vault manager
-            this.keyVaultManager = new AzureKeyVaultManager();
-            
-            // Load all secrets from Key Vault
-            const secrets = await this.keyVaultManager.getAllSecrets();
-            
-            // Build configuration object
-            this.config = {
-                // Server configuration
-                port: process.env.PORT || 5000,
-                nodeEnv: process.env.NODE_ENV || 'development',
+        // Check if we should use Key Vault
+        const useKeyVault = process.env.USE_AZURE_KEY_VAULT === 'true';
+        
+        if (useKeyVault) {
+            try {
+                console.log('🔐 Using Azure Key Vault for configuration...');
+                // Initialize Key Vault manager
+                this.keyVaultManager = new AzureKeyVaultManager();
+                
+                // Load all secrets from Key Vault
+                const secrets = await this.keyVaultManager.getAllSecrets();
+                
+                // Build configuration object
+                this.config = {
+                    // Server configuration
+                    port: process.env.PORT || 5000,
+                    nodeEnv: process.env.NODE_ENV || 'development',
                 
                 // Database configuration
                 databaseUrl: await this.keyVaultManager.getDatabaseUrl(),
@@ -34,17 +39,47 @@ class ConfigManager {
                 appInsightsConnectionString: secrets.APPLICATIONINSIGHTS_CONNECTION_STRING,
                 
                 // Key Vault info
-                keyVaultName: process.env.KEY_VAULT_NAME
+                keyVaultName: this.keyVaultManager.keyVaultName
             };
             
             this.isInitialized = true;
-            console.log('✅ Configuration initialized successfully');
+            console.log('✅ Configuration initialized successfully with Key Vault');
             console.log(`🔐 Using Key Vault: ${this.config.keyVaultName}`);
             console.log(`🌍 Environment: ${this.config.nodeEnv}`);
             
-        } catch (error) {
-            console.error('❌ Failed to initialize configuration:', error.message);
-            throw error;
+            } catch (error) {
+                console.error('❌ Failed to initialize Key Vault configuration:', error.message);
+                console.log('🔄 Falling back to environment variables...');
+                
+                // Fallback to environment variables
+                this.config = {
+                    port: process.env.PORT || 5000,
+                    nodeEnv: process.env.NODE_ENV || 'development',
+                    databaseUrl: process.env.DATABASE_URL,
+                    jwtSecret: process.env.JWT_SECRET,
+                    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+                    appInsightsConnectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+                    keyVaultName: 'fallback-env-vars'
+                };
+                
+                this.isInitialized = true;
+                console.log('✅ Configuration initialized with environment variables fallback');
+            }
+        } else {
+            console.log('📝 Using environment variables for configuration...');
+            
+            this.config = {
+                port: process.env.PORT || 5000,
+                nodeEnv: process.env.NODE_ENV || 'development',
+                databaseUrl: process.env.DATABASE_URL,
+                jwtSecret: process.env.JWT_SECRET,
+                jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+                appInsightsConnectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+                keyVaultName: 'environment-variables'
+            };
+            
+            this.isInitialized = true;
+            console.log('✅ Configuration initialized with environment variables');
         }
     }
 
