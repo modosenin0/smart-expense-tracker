@@ -12,16 +12,20 @@ import configManager from "./config/configManager.js";
 dotenv.config();
 
 // Initialize configuration and Application Insights
+// Global variables for configuration and insights
+let config;
+let insights;
+
 async function initializeApp() {
   try {
     console.log('🚀 Starting Smart Expense Tracker API...');
     
     // Initialize configuration manager (loads secrets from Key Vault)
     await configManager.initialize();
-    const config = configManager.getConfig();
+    config = configManager.getConfig();
     
     // Initialize Application Insights with Key Vault connection string
-    const appInsights = require('applicationinsights');
+    const appInsights = (await import('applicationinsights')).default;
     appInsights.setup(config.appInsightsConnectionString)
       .setAutoDependencyCorrelation(true)
       .setAutoCollectRequests(true)
@@ -33,12 +37,15 @@ async function initializeApp() {
       .setSendLiveMetrics(true)
       .start();
     
-    return { config, insights: appInsights };
+    insights = appInsights;
+    
+    return { config, insights };
   } catch (error) {
     console.error('❌ Failed to initialize application:', error.message);
     process.exit(1);
   }
 }
+
 const app = express();
 
 // Configure CORS for both development and production
@@ -108,10 +115,23 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// Only start server if not in test mode
+// Initialize and start server
 if (process.env.NODE_ENV !== "test") {
-  const PORT = process.env.PORT || 5000;
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  initializeApp().then(() => {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+      console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🔍 Application Insights: ${insights ? 'Enabled' : 'Disabled'}`);
+    });
+  }).catch(error => {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  });
+} else {
+  // For tests, initialize without starting server
+  initializeApp().catch(error => {
+    console.error('❌ Failed to initialize for tests:', error);
+  });
 }
 
 export default app;

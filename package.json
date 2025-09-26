@@ -4,8 +4,8 @@
   "description": "Smart Expense Tracker - Full Stack Application with Azure Key Vault Integration",
   "main": "backend/src/index.js",
   "scripts": {
-    "start": "node backend/src/index.js",
-    "dev": "node backend/src/index.js",
+    "start": "cd backend && node src/index.js",
+    "dev": "cd backend && node src/index.js",
     "build": "cd backend && npm install",
     "test": "cd backend && npm test"
   },
