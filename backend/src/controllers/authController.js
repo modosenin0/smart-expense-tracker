@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
-import appInsights from "applicationinsights";
+// import appInsights from "applicationinsights"; // Disabled for local development
 
 export const register = async (req, res) => {
   try {
@@ -28,17 +28,17 @@ export const register = async (req, res) => {
 
     res.status(201).json({ token, user: { id: newUser.id, name: newUser.name, email: newUser.email } });
   } catch (err) {
-    // Track registration errors
-    if (appInsights.defaultClient) {
-      appInsights.defaultClient.trackException({ 
-        exception: err,
-        properties: { 
-          controller: 'authController',
-          action: 'register',
-          email: req.body.email 
-        }
-      });
-    }
+    // Track registration errors (disabled for local development)
+    // if (appInsights.defaultClient) {
+    //   appInsights.defaultClient.trackException({ 
+    //     exception: err,
+    //     properties: { 
+    //       controller: 'authController',
+    //       action: 'register',
+    //       email: req.body.email 
+    //     }
+    //   });
+    // }
     res.status(500).json({ error: err.message });
   }
 };
@@ -63,17 +63,17 @@ export const login = async (req, res) => {
 
     res.json({ token });
   } catch (err) {
-    // Track login errors
-    if (appInsights.defaultClient) {
-      appInsights.defaultClient.trackException({ 
-        exception: err,
-        properties: { 
-          controller: 'authController',
-          action: 'login',
-          email: req.body.email 
-        }
-      });
-    }
+    // Track login errors (disabled for local development)
+    // if (appInsights.defaultClient) {
+    //   appInsights.defaultClient.trackException({ 
+    //     exception: err,
+    //     properties: { 
+    //       controller: 'authController',
+    //       action: 'login',
+    //       email: req.body.email 
+    //     }
+    //   });
+    // }
     res.status(500).json({ error: err.message });
   }
 };

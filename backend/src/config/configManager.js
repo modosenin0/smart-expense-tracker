@@ -1,4 +1,5 @@
-import AzureKeyVaultManager from './keyVault.js';
+// Conditional import - only import Azure Key Vault when needed
+let AzureKeyVaultManager = null;
 
 class ConfigManager {
     constructor() {
@@ -11,31 +12,70 @@ class ConfigManager {
         console.log('🚀 Initializing configuration...');
         
         try {
-            // Initialize Key Vault manager
-            this.keyVaultManager = new AzureKeyVaultManager();
+            const useKeyVault = process.env.USE_AZURE_KEY_VAULT === 'true';
             
-            // Load all secrets from Key Vault
-            const secrets = await this.keyVaultManager.getAllSecrets();
-            
-            // Build configuration object
-            this.config = {
-                // Server configuration
-                port: process.env.PORT || 5000,
-                nodeEnv: process.env.NODE_ENV || 'development',
+            if (useKeyVault) {
+                console.log('🔐 Using Azure Key Vault for configuration...');
+                // Dynamically import Azure Key Vault manager only when needed
+                if (!AzureKeyVaultManager) {
+                    const keyVaultModule = await import('./keyVault.js');
+                    AzureKeyVaultManager = keyVaultModule.default;
+                }
+                this.keyVaultManager = new AzureKeyVaultManager();
                 
-                // Database configuration
-                databaseUrl: await this.keyVaultManager.getDatabaseUrl(),
+                // Load all secrets from Key Vault
+                const secrets = await this.keyVaultManager.getAllSecrets();
                 
-                // JWT configuration
-                jwtSecret: secrets.JWT_SECRET,
-                jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+                // Build configuration object with Key Vault secrets
+                this.config = {
+                    // Server configuration
+                    port: process.env.PORT || 5000,
+                    nodeEnv: process.env.NODE_ENV || 'development',
+                    
+                    // Database configuration
+                    databaseUrl: await this.keyVaultManager.getDatabaseUrl(),
+                    
+                    // JWT configuration
+                    jwtSecret: secrets.JWT_SECRET,
+                    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+                    
+                    // Application Insights
+                    appInsightsConnectionString: secrets.APPLICATIONINSIGHTS_CONNECTION_STRING,
+                    
+                    // Key Vault info
+                    keyVaultName: process.env.KEY_VAULT_NAME
+                };
+            } else {
+                console.log('🏠 Using local environment variables for configuration...');
                 
-                // Application Insights
-                appInsightsConnectionString: secrets.APPLICATIONINSIGHTS_CONNECTION_STRING,
+                // Validate required local environment variables
+                if (!process.env.DATABASE_URL) {
+                    throw new Error('DATABASE_URL is required for local development. Please set it in your .env file.');
+                }
+                if (!process.env.JWT_SECRET) {
+                    throw new Error('JWT_SECRET is required for local development. Please set it in your .env file.');
+                }
                 
-                // Key Vault info
-                keyVaultName: process.env.KEY_VAULT_NAME
-            };
+                // Build configuration object with local environment variables
+                this.config = {
+                    // Server configuration
+                    port: process.env.PORT || 5000,
+                    nodeEnv: process.env.NODE_ENV || 'development',
+                    
+                    // Database configuration
+                    databaseUrl: process.env.DATABASE_URL,
+                    
+                    // JWT configuration
+                    jwtSecret: process.env.JWT_SECRET,
+                    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+                    
+                    // Application Insights (optional for local development)
+                    appInsightsConnectionString: process.env.APPLICATIONINSIGHTS_CONNECTION_STRING,
+                    
+                    // Local development info
+                    keyVaultName: 'local-development'
+                };
+            }
             
             this.isInitialized = true;
             console.log('✅ Configuration initialized successfully');
@@ -57,7 +97,8 @@ class ConfigManager {
 
     async refreshSecrets() {
         if (!this.keyVaultManager) {
-            throw new Error('Key Vault manager not initialized');
+            console.log('🏠 Local development mode - no secrets to refresh');
+            return;
         }
         
         console.log('🔄 Refreshing secrets from Key Vault...');
@@ -76,7 +117,7 @@ class ConfigManager {
 
     async healthCheck() {
         if (!this.keyVaultManager) {
-            return { status: 'unhealthy', error: 'Key Vault manager not initialized' };
+            return { status: 'healthy', mode: 'local-development' };
         }
         
         return await this.keyVaultManager.healthCheck();

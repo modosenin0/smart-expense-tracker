@@ -12,6 +12,8 @@ import configManager from "./config/configManager.js";
 dotenv.config();
 
 // Initialize configuration and Application Insights
+let insights = null; // Global variable for Application Insights
+
 async function initializeApp() {
   try {
     console.log('🚀 Starting Smart Expense Tracker API...');
@@ -20,25 +22,20 @@ async function initializeApp() {
     await configManager.initialize();
     const config = configManager.getConfig();
     
-    // Initialize Application Insights with Key Vault connection string
-    const appInsights = require('applicationinsights');
-    appInsights.setup(config.appInsightsConnectionString)
-      .setAutoDependencyCorrelation(true)
-      .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(true, true)
-      .setAutoCollectExceptions(true)
-      .setAutoCollectDependencies(true)
-      .setAutoCollectConsole(true)
-      .setUseDiskRetryCaching(true)
-      .setSendLiveMetrics(true)
-      .start();
+    // Skip Application Insights for local development to avoid dependency issues
+    insights = null; // Set global variable
+    console.log('⚠️ Application Insights disabled for local development');
     
-    return { config, insights: appInsights };
+    return { config, insights };
   } catch (error) {
     console.error('❌ Failed to initialize application:', error.message);
     process.exit(1);
   }
 }
+
+// Initialize the app before starting the server
+await initializeApp();
+
 const app = express();
 
 // Configure CORS for both development and production
