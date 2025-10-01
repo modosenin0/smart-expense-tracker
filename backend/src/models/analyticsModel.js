@@ -1,7 +1,8 @@
-import pool from "../config/db.js";
+import dbManager from "../config/db.js";
 
 // 1. Total spent per category (current month)
 export const getCategoryTotals = async (userId) => {
+  const pool = await dbManager.getPool();
   const result = await pool.query(
     `SELECT c.name as category, SUM(e.converted_amount) as total_gbp
      FROM expenses e
@@ -17,6 +18,7 @@ export const getCategoryTotals = async (userId) => {
 
 // 2. Monthly spending trend (last 6 months)
 export const getMonthlyTrend = async (userId) => {
+  const pool = await dbManager.getPool();
   const result = await pool.query(
     `SELECT TO_CHAR(DATE_TRUNC('month', e.expense_date), 'YYYY-MM') as month,
             SUM(e.converted_amount) as total
@@ -32,6 +34,7 @@ export const getMonthlyTrend = async (userId) => {
 
 // 3. Top 3 categories overall
 export const getTopCategories = async (userId) => {
+  const pool = await dbManager.getPool();
   const result = await pool.query(
     `SELECT c.name as category, SUM(e.converted_amount) as total
      FROM expenses e

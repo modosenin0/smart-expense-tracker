@@ -70,11 +70,19 @@ class AzureKeyVaultManager {
     // Method to build complete database URL with password from Key Vault
     async getDatabaseUrl() {
         const password = await this.getSecret('DB-ADMIN-PASSWORD');
-        const baseUrl = process.env.DATABASE_URL || '';
+        const baseUrl = await this.getSecret('DATABASE-URL');
         
-        // Replace placeholder password in DATABASE_URL
-        const urlWithPassword = baseUrl.replace(/@([^.]+)\./, `@$1:${password}@`);
-        return urlWithPassword;
+        // Simple approach: manually reconstruct the URL
+        const match = baseUrl.match(/postgresql:\/\/([^@]+)@(.+)/);
+        if (match) {
+            const username = match[1];
+            const rest = match[2];
+            const finalUrl = `postgresql://${username}:${password}@${rest}`;
+            return finalUrl;
+        }
+        
+        console.error('❌ Failed to parse database URL:', baseUrl);
+        return baseUrl;
     }
 
     // Clear cache (useful for testing or forced refresh)

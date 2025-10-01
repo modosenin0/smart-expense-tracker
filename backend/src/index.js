@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import pool from "./config/db.js";
+import dbManager from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import expenseRoutes from "./routes/expenseRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -21,6 +21,9 @@ async function initializeApp() {
     // Initialize configuration manager (loads secrets from Key Vault)
     await configManager.initialize();
     const config = configManager.getConfig();
+    
+    // Initialize database with proper configuration
+    await dbManager.initializeDatabase();
     
     // Skip Application Insights for local development to avoid dependency issues
     insights = null; // Set global variable
@@ -98,6 +101,7 @@ app.get("/", (req, res) => {
 
 app.get("/test-db", async (req, res) => {
   try {
+    const pool = await dbManager.getPool();
     const result = await pool.query("SELECT NOW()");
     res.json({ db_time: result.rows[0].now });
   } catch (err) {

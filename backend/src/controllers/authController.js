@@ -1,6 +1,7 @@
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { createUser, findUserByEmail } from "../models/userModel.js";
+import configManager from "../config/configManager.js";
 // import appInsights from "applicationinsights"; // Disabled for local development
 
 export const register = async (req, res) => {
@@ -22,7 +23,7 @@ export const register = async (req, res) => {
     // Generate JWT token for automatic login
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email },
-      process.env.JWT_SECRET,
+      configManager.config.jwtSecret,
       { expiresIn: "1h" }
     );
 
@@ -57,7 +58,7 @@ export const login = async (req, res) => {
     // Generate JWT
     const token = jwt.sign(
       { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
+      configManager.config.jwtSecret,
       { expiresIn: "1h" }
     );
 
